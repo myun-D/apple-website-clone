@@ -67,6 +67,7 @@ a{
 
 /* section */
 .scroll-section{
+  position: relative;
   padding-top: 50vh;
 }
 #scroll-section-0 h1{
@@ -175,9 +176,13 @@ a{
   opacity: 0.8;
   filter: hue-rotate(50deg)
 }
-#scroll-section-0 .sticky-elem-canvas canvas{
-  width: 120%;
+.image-blend-canvas.sticky{
+  position: fixed;
 }
+
+/* #scroll-section-0 .sticky-elem-canvas canvas{
+  width: 120%;
+} */
 #scroll-section-3{
   display: flex;
   flex-direction: column;

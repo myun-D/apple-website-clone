@@ -112,7 +112,8 @@
       },
       values : {
         rect1X : [0, 0, { start: 0, end: 0 }],
-        rect2X : [0, 0, { start: 0, end: 0 }]
+        rect2X : [0, 0, { start: 0, end: 0 }],
+        rectStartY: 0
       }
     },
   ]
@@ -162,9 +163,21 @@
     }
     document.body.setAttribute('id',`show-scene-${currentScene}`)
 
-    const heightRatio = window.innerHeight / 1080;
-    sceneInfo[0].objs.canvas.style.transform = `translate3d(-50%,-50%,0) scale(${heightRatio})`;
-    sceneInfo[2].objs.canvas.style.transform = `translate3d(-50%,-50%,0) scale(${heightRatio})`;
+    
+    const widthRatio = window.innerWidth / sceneInfo[0].objs.canvas.width;
+    const heightRatio = window.innerHeight / sceneInfo[0].objs.canvas.height;
+    // console.log('width:::::::' + widthRatio,'height:::::::' + heightRatio);
+    let canvasScaleRatio;
+
+    if(widthRatio <= heightRatio){
+      canvasScaleRatio = heightRatio;
+    }else{
+      canvasScaleRatio = widthRatio;
+    }
+
+    const heightRatio2 = window.innerHeight / 1080;
+    sceneInfo[0].objs.canvas.style.transform = `translate3d(-50%,-50%,0) scale(${canvasScaleRatio})`;
+    sceneInfo[2].objs.canvas.style.transform = `translate3d(-50%,-50%,0) scale(${heightRatio2})`;
   }
 
   function calcValues(values, currentYOffset){
@@ -295,6 +308,44 @@
           objs.messageC.style.opacity = calcValues(values.messageC_opacity_out, currentYOffset);
           objs.pinC.style.transform = `scaleY(${calcValues(values.pinC_scaleY, currentYOffset)})`;
         }
+
+        //currentScene 3에서 끄는 캔버스를 미리 그려주기 시작
+        if(scrollRatio > 0.9){
+          const objs = sceneInfo[3].objs;
+          const values = sceneInfo[3].values;
+          const widthRatio = window.innerWidth / objs.canvas.width;
+          const heightRatio = window.innerHeight / objs.canvas.height;
+          // console.log('width:::::::' + widthRatio,'height:::::::' + heightRatio);
+          let canvasScaleRatio;
+
+          if(widthRatio <= heightRatio){
+            canvasScaleRatio = heightRatio;
+          }else{
+            canvasScaleRatio = widthRatio;
+          }
+
+          objs.canvas.style.transform = `scale(${canvasScaleRatio})`
+          objs.context.fillStyle = '#fff';
+          objs.context.drawImage(objs.images[0], 0, 0);
+
+          //캔버스 사이즈에 맞춰 가정한 innerWidth와 innerHeight
+          const reCalculatedInnerWidth = document.body.offsetWidth / canvasScaleRatio;
+          const reCalculatedInnerHeight = window.innerHeight / canvasScaleRatio;
+
+
+          const whiteRectWidth = reCalculatedInnerWidth * 0.15;
+          values.rect1X[0] = (objs.canvas.width - reCalculatedInnerWidth) / 2;
+          values.rect1X[1] = values.rect1X[0] - whiteRectWidth;
+          values.rect2X[0] = values.rect1X[0] + reCalculatedInnerWidth - whiteRectWidth;
+          values.rect2X[1] = values.rect2X[0] + whiteRectWidth;
+
+          //좌우 흰색 박스 그리기
+          // objs.context
+          objs.context.fillRect(values.rect1X[0],0, parseInt(whiteRectWidth), objs.canvas.height)
+          objs.context.fillRect(values.rect2X[0],0, parseInt(whiteRectWidth), objs.canvas.height)
+          // objs.context.fillRect(parseInt(calcValues(values.rect1X, currentYOffset)),0, parseInt(whiteRectWidth), objs.canvas.height)
+          // objs.context.fillRect(parseInt(calcValues(values.rect2X, currentYOffset)),0, parseInt(whiteRectWidth), objs.canvas.height)
+        }
         break;
 
       case 3 : 
@@ -312,11 +363,22 @@
         }
 
         objs.canvas.style.transform = `scale(${canvasScaleRatio})`
+        objs.context.fillStyle = '#fff';
         objs.context.drawImage(objs.images[0], 0, 0);
 
         //캔버스 사이즈에 맞춰 가정한 innerWidth와 innerHeight
-        const reCalculatedInnerWidth = window.innerWidth / canvasScaleRatio;
+        const reCalculatedInnerWidth = document.body.offsetWidth / canvasScaleRatio;
         const reCalculatedInnerHeight = window.innerHeight / canvasScaleRatio;
+
+
+        if(!values.rectStartY){
+          // values.rectStartY = objs.canvas.getBoundingClientRect().top;
+          values.rectStartY = objs.canvas.offsetTop + (objs.canvas.height - objs.canvas.height * canvasScaleRatio) / 2;
+          values.rect1X[2].start = (window.innerHeight / 2) / scrollHeight ;
+          values.rect2X[2].start = (window.innerHeight / 2) / scrollHeight ;
+          values.rect1X[2].end = values.rectStartY / scrollHeight;
+          values.rect2X[2].end = values.rectStartY / scrollHeight;
+        }
 
         const whiteRectWidth = reCalculatedInnerWidth * 0.15;
         values.rect1X[0] = (objs.canvas.width - reCalculatedInnerWidth) / 2;
@@ -326,8 +388,25 @@
 
         //좌우 흰색 박스 그리기
         // objs.context
-        objs.context.fillRect(values.rect1X[0],0, parseInt(whiteRectWidth), objs.canvas.height)
-        objs.context.fillRect(values.rect2X[0],0, parseInt(whiteRectWidth), objs.canvas.height)
+        // objs.context.fillRect(values.rect1X[0],0, parseInt(whiteRectWidth), objs.canvas.height)
+        // objs.context.fillRect(values.rect2X[0],0, parseInt(whiteRectWidth), objs.canvas.height)
+        objs.context.fillRect(parseInt(calcValues(values.rect1X, currentYOffset)),0, parseInt(whiteRectWidth), objs.canvas.height)
+        objs.context.fillRect(parseInt(calcValues(values.rect2X, currentYOffset)),0, parseInt(whiteRectWidth), objs.canvas.height)
+
+
+        if(scrollRatio < values.rect1X[2].end){
+          step = 1;
+          console.log('캔버스 닿기 전')
+          
+          
+          objs.canvas.classList.remove('sticky');
+        }else{
+          console.log('캔버스 닿은 후')
+          step = 2;
+          
+          objs.canvas.classList.add('sticky');
+          objs.canvas.style.top =  `${-(objs.canvas.height - objs.canvas.height * canvasScaleRatio) / 2}px`;
+        }
 
         break;
     }

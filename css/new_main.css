@@ -163,6 +163,9 @@ a{
   position: fixed;
   left: 0;
 }
+#scroll-section-2 .main-message.a p{
+  color: #000;
+}
 .sticky-elem-canvas{
   top: 0;
   height: 100%;

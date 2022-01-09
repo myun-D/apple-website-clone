@@ -18,6 +18,10 @@ a{
   text-decoration: none;
 }
 
+body.before-load{
+  overflow: hidden;
+}
+
 .global-nav{
   z-index: 10;
   position: absolute;
@@ -208,7 +212,57 @@ a{
 #show-scene-2 #scroll-section-2 .sticky-elem,
 #show-scene-3 #scroll-section-3 .sticky-elem{
   display: block;
+  will-change: transform, opacity;
 }
+
+.loading{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #fff;
+  opacity: 0;
+  transition: 0.5s; 
+}
+.before-load .loading{
+  opacity: 1;
+}
+.loading-circle{
+  width: 54px;
+  height: 54px;
+  animation: loading-spin 3s infinite;
+}
+@keyframes loading-spin{
+  100%{
+    transform: rotate(360deg);
+  }
+}
+.loading-circle circle{
+  stroke: #000;
+  stroke-width: 4;
+  /* getTotalLength()로 stroke의 길이를 얻어올 수 있음 */
+  stroke-dasharray: 157;
+  stroke-dashoffset: 0;
+  fill: none;
+  animation: loading-circle-ani 1s infinite;
+}
+@keyframes loading-circle-ani{
+  0% {
+    stroke-dashoffset: 157;
+  }
+  75% {
+    stroke-dashoffset: -147;
+  }
+  100% {
+    stroke-dashoffset: -157;
+  }
+}
+
 
 @media (min-width: 1024px){
   #scroll-section-0 h1{

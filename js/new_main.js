@@ -129,9 +129,9 @@
 
   function setCanvasImage() {
     let imgElem;
-    for(var i = 0; i < sceneInfo[0].values.videoImageCount; i++){
+    for(var i = 0; i < sceneInfo[0].values.videoImageCount - 1; i++){
       imgElem = new Image();
-      imgElem.src = `./video/003/cider ${20 + i}.jpg`;
+      imgElem.src = `./video/003/cider_${20 + i}.jpg`;
       sceneInfo[0].objs.videoImages.push(imgElem);
     }
     let imgElem2;
@@ -148,7 +148,6 @@
       sceneInfo[3].objs.images.push(imgElem3);
     }
   }
-  setCanvasImage();
 
   function checkMenu() {
     if(yOffset > 44){
@@ -287,8 +286,8 @@
 
       case 2 : 
         // console.log('2 play')
-        let sequence2 = Math.round(calcValues(values.imageSequence, currentYOffset));
-        objs.context.drawImage(objs.videoImages[sequence2], 0, 0);
+        // let sequence2 = Math.round(calcValues(values.imageSequence, currentYOffset));
+        // objs.context.drawImage(objs.videoImages[sequence2], 0, 0);
 
         if (scrollRatio <= 0.5) {
           //in
@@ -396,8 +395,8 @@
         if(!values.rectStartY){
           // values.rectStartY = objs.canvas.getBoundingClientRect().top;
           values.rectStartY = objs.canvas.offsetTop + (objs.canvas.height - objs.canvas.height * canvasScaleRatio) / 2;
-          values.rect1X[2].start = (window.innerHeight / 2) / scrollHeight ;
-          values.rect2X[2].start = (window.innerHeight / 2) / scrollHeight ;
+          values.rect1X[2].start = (window.innerHeight / 2) / scrollHeight;
+          values.rect2X[2].start = (window.innerHeight / 2) / scrollHeight;
           values.rect1X[2].end = values.rectStartY / scrollHeight;
           values.rect2X[2].end = values.rectStartY / scrollHeight;
         }
@@ -475,13 +474,13 @@
       prevScrollHeight += sceneInfo[i].scrollHeight;
     }
 
-    if(yOffset > prevScrollHeight + sceneInfo[currentScene].scrollHeight){
+    if(delayedYOffset > prevScrollHeight + sceneInfo[currentScene].scrollHeight){
       enterNewScene = true;
       currentScene++;
       document.body.setAttribute('id',`show-scene-${currentScene}`)
     }
 
-    if(yOffset < prevScrollHeight){ 
+    if(delayedYOffset < prevScrollHeight){ 
       enterNewScene = true;
       if(currentScene == 0) return;
       currentScene--;
@@ -496,14 +495,17 @@
   function loop(){
     delayedYOffset = delayedYOffset + (yOffset - delayedYOffset) * acc;
 
-    const currentYOffset = delayedYOffset - prevScrollHeight;
-    const objs = sceneInfo[currentScene].objs;
-    const values = sceneInfo[currentScene].values;
-    if(currentScene == 0){
-      let sequence = Math.round(calcValues(values.imageSequence, currentYOffset));
-      objs.context.drawImage(objs.videoImages[sequence], 0, 0);
-      
-      console.log('loop')
+    if(!enterNewScene) {
+      if(currentScene == 0 || currentScene == 2){
+        const currentYOffset = delayedYOffset - prevScrollHeight;
+        const objs = sceneInfo[currentScene].objs;
+        const values = sceneInfo[currentScene].values;
+
+        let sequence = Math.round(calcValues(values.imageSequence, currentYOffset));
+        if(objs.videoImages[sequence]){
+          objs.context.drawImage(objs.videoImages[sequence], 0, 0);
+        }
+      }
     }
     rafId = requestAnimationFrame(loop);
 
@@ -513,21 +515,41 @@
     }
   }
   
-  window.addEventListener('scroll', () => {
-    yOffset = window.pageYOffset;
-    scrollLoop();
-    checkMenu();
-
-    if(!rafState){
-      rafId = requestAnimationFrame(loop)
-      rafState = true;
-    }
-  });
+  
   
   // window.addEventListener('DOMContentLoaded', setLayout); // DOM만 로드되면 실행, 이미지, 소스파일은 추후
   window.addEventListener('load', ()=>{
+    document.body.classList.remove('before-load');
+    
     setLayout();
     sceneInfo[0].objs.context.drawImage(sceneInfo[0].objs.videoImages[0], 0, 0);
+
+    window.addEventListener('scroll', () => {
+      yOffset = window.pageYOffset;
+      scrollLoop();
+      checkMenu();
+  
+      if(!rafState){
+        rafId = requestAnimationFrame(loop)
+        rafState = true;
+      }
+    });
+
+    window.addEventListener('resize', ()=>{
+      if(window.innerWidth > 600){
+        setLayout();
+      }
+      sceneInfo[3].values.rectStartY = 0;
+    });
+
+    window.addEventListener('orientationchange', setLayout); //가로 세로 전환시]
+    document.querySelector('.loading').addEventListener('transitionend', (e)=>{
+      document.body.removeChild(e.currentTarget);
+    })
   }); //이미지까지 로딩이 다 되면 실행
-  window.addEventListener('resize', setLayout);
+  
+  
+  
+
+  setCanvasImage();
 })();

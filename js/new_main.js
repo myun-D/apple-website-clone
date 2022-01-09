@@ -28,7 +28,7 @@
         videoImages : []
       },
       values : {
-        videoImageCount : 300,
+        videoImageCount : 299,
         imageSequence : [0, 299],
         canvas_opacity: [1, 0, { start: 0.9, end: 1 }],
         messageA_opacity_in: [0, 1, { start: 0.1, end: 0.2 }],
@@ -47,7 +47,8 @@
         messageB_translateY_out: [0, -20, { start: 0.45, end: 0.5 }],
         messageC_translateY_out: [0, -20, { start: 0.65, end: 0.7 }],
         messageD_translateY_out: [0, -20, { start: 0.85, end: 0.9 }],
-      }
+      },
+      finishedLoadingImages: false
     },
     {
       //1
@@ -97,7 +98,8 @@
         pinC_opacity_in: [0, 1, { start: 0.72, end: 0.77 }],
         pinB_opacity_out: [1, 0, { start: 0.58, end: 0.63 }],
         pinC_opacity_out: [1, 0, { start: 0.85, end: 0.9 }]
-      }
+      },
+      finishedLoadingImages: false
     },
     {
       //3
@@ -124,30 +126,147 @@
         canvasCaption_translateY: [20, 0, {start: 0, end: 0}],
         rectStartY: 0,
       }
-    },
+    }
   ]
 
-  function setCanvasImage() {
-    let imgElem;
-    for(var i = 0; i < sceneInfo[0].values.videoImageCount - 1; i++){
-      imgElem = new Image();
-      imgElem.src = `./video/003/cider_${20 + i}.jpg`;
-      sceneInfo[0].objs.videoImages.push(imgElem);
-    }
-    let imgElem2;
-    for(var i = 0; i < sceneInfo[2].values.videoImageCount; i++){
-      imgElem2 = new Image();
-      imgElem2.src = `./video/002/IMG_${7027 + i}.jpg`;
-      sceneInfo[2].objs.videoImages.push(imgElem2);
-    }
+  let totalImages = 0;
+  const scene0Images = [];
+  const scene2Images = [];
 
-    let imgElem3;
-    for(var i = 0; i < sceneInfo[3].objs.imagesPath.length; i++){
-      imgElem3 = new Image();
-      imgElem3.src = sceneInfo[3].objs.imagesPath[i]
-      sceneInfo[3].objs.images.push(imgElem3);
+  function loadImageOfScene0() {
+    if(sceneInfo[0].finishedLoadingImages) return;
+
+    let numberOfLoadedImages = 0;
+    for (let i = 0; i < sceneInfo[0].values.videoImageCount; i++){
+      let imgElem = new Image();
+      imgElem.src = `./video/003/cider_${20 + i}.jpg`;
+      imgElem.addEventListener('load', () => {
+        scene0Images.push(imgElem);
+        numberOfLoadedImages++;
+
+        totalImages++;
+
+        if(numberOfLoadedImages === sceneInfo[0].values.videoImageCount) {
+          sceneInfo[0].finishedLoadingImages = true;
+          setImagesOfScene0();
+          initAfterLoadImages();
+
+          if(!sceneInfo[2].finishedLoadingImages) {
+            loadImageOfScene2();
+          }
+        }
+      })
     }
   }
+
+  function loadImageOfScene2() {
+    if(sceneInfo[2].finishedLoadingImages) return;
+
+    let numberOfLoadedImages = 0;
+    for (let i = 0; i < sceneInfo[2].values.videoImageCount; i++){
+      let imgElem = new Image();
+      imgElem.src = `./video/002/IMG_${7027 + i}.jpg`;
+      imgElem.addEventListener('load', () => {
+        scene2Images.push(imgElem);
+        numberOfLoadedImages++;
+
+        totalImages++;
+
+        if(numberOfLoadedImages === sceneInfo[2].values.videoImageCount) {
+          sceneInfo[2].finishedLoadingImages = true;
+          setImagesOfScene2();
+          initAfterLoadImages();
+
+          if(!sceneInfo[0].finishedLoadingImages) {
+            loadImageOfScene0();
+          }
+        }
+      })
+    }
+  }
+
+  function setImagesOfScene0(){
+    sortImages(scene0Images);
+    for(let i = 0; i < scene0Images.length; i++){
+      sceneInfo[0].objs.videoImages.push(scene0Images[i]);
+    }
+  }
+  function setImagesOfScene2(){
+    sortImages(scene2Images);
+    for(let i = 0; i < scene2Images.length; i++){
+      sceneInfo[2].objs.videoImages.push(scene2Images[i]);
+    }
+  }
+
+  function sortImages(imageArray){
+    let temp;
+    let imageNumber1;
+    let imageNumber2;
+
+    for(let i = 0; i < imageArray.length; i++){
+      for(let j = 0; j < imageArray.length - 1; j++){
+        if(j < imageArray.length - 1){
+          imageNumber1 = getImageNumber(imageArray[j].currentSrc);
+          imageNumber2 = getImageNumber(imageArray[j + 1].currentSrc);
+
+          if(imageNumber1 > imageNumber2){
+            temp = imageArray[j];
+            imageArray[j] = imageArray[j + 1];
+            imageArray[j + 1] = temp;
+          }
+        }
+      }
+    }
+  }
+
+  function getImageNumber(str){
+    const newStr = str.substring(
+      str.lastIndexOf('_') + 1.,
+      str.lastIndexOf('.')
+    )
+    return newStr * 1;
+  }
+
+  function initAfterLoadImages(){
+    if(currentScene !==2 && sceneInfo[0].objs.videoImages[0]){
+      sceneInfo[0].objs.context.drawImage(sceneInfo[0].objs.videoImages[0], 0, 0);
+    }
+
+    let tempYOffset = yOffset;
+    let tempScrollCount = 0;
+    
+    if(yOffset > 0){
+      let siId = setInterval(()=>{
+        window.scrollTo(0, tempYOffset);
+        tempYOffset += 5;
+  
+        if(tempScrollCount > 20){
+          clearInterval(siId);
+        }
+        tempScrollCount++;
+      }, 20)
+    }
+  }
+
+
+  // function setCanvasImage() {
+    
+
+  //   let imgElem;
+  //   for(var i = 0; i < sceneInfo[0].values.videoImageCount; i++){
+  //     imgElem = new Image();
+  //     imgElem.src = `./video/003/cider_${20 + i}.jpg`;
+  //     sceneInfo[0].objs.videoImages.push(imgElem);
+  //   }
+  //   let imgElem2;
+  //   for(var i = 0; i < sceneInfo[2].values.videoImageCount; i++){
+  //     imgElem2 = new Image();
+  //     imgElem2.src = `./video/002/IMG_${7027 + i}.jpg`;
+  //     sceneInfo[2].objs.videoImages.push(imgElem2);
+  //   }
+
+    
+  // }
 
   function checkMenu() {
     if(yOffset > 44){
@@ -473,10 +592,18 @@
     for(let i = 0; i < currentScene; i++){
       prevScrollHeight += sceneInfo[i].scrollHeight;
     }
-
+    
+    if(delayedYOffset < prevScrollHeight + sceneInfo[currentScene].scrollHeight){
+      document.body.classList.remove('scroll-effect-end');
+    }
     if(delayedYOffset > prevScrollHeight + sceneInfo[currentScene].scrollHeight){
       enterNewScene = true;
-      currentScene++;
+      if(currentScene == sceneInfo.length -1){
+        document.body.classList.add('scroll-effect-end');
+      }
+      if(currentScene < sceneInfo.length - 1){
+        currentScene++;
+      }
       document.body.setAttribute('id',`show-scene-${currentScene}`)
     }
 
@@ -518,11 +645,29 @@
   
   
   // window.addEventListener('DOMContentLoaded', setLayout); // DOM만 로드되면 실행, 이미지, 소스파일은 추후
-  window.addEventListener('load', ()=>{
-    document.body.classList.remove('before-load');
+  window.addEventListener('DOMContentLoaded', ()=>{
+    /* console.log('DOMContentLoaded'); */
     
     setLayout();
-    sceneInfo[0].objs.context.drawImage(sceneInfo[0].objs.videoImages[0], 0, 0);
+    document.body.classList.remove('before-load');
+    setLayout();
+
+    let imgElem3;
+    for(var i = 0; i < sceneInfo[3].objs.imagesPath.length; i++){
+      imgElem3 = new Image();
+      imgElem3.src = sceneInfo[3].objs.imagesPath[i]
+      sceneInfo[3].objs.images.push(imgElem3);
+    }
+
+    if(currentScene !== 2){
+      loadImageOfScene0(); 
+    }else{
+      loadImageOfScene2();
+    }
+
+    // setTimeout(()=>{
+    //   window.scrollTo(0, 200);
+    // },1000)
 
     window.addEventListener('scroll', () => {
       yOffset = window.pageYOffset;
@@ -536,20 +681,24 @@
     });
 
     window.addEventListener('resize', ()=>{
-      if(window.innerWidth > 600){
-        setLayout();
+      if(window.innerWidth > 900){
+        window.location.reload();
       }
-      sceneInfo[3].values.rectStartY = 0;
     });
 
-    window.addEventListener('orientationchange', setLayout); //가로 세로 전환시]
+    window.addEventListener('orientationchange', ()=>{
+      scrollTo(0,0)
+      setTimeout(()=>{
+        window.location.reload();
+      },500);
+    }); //가로 세로 전환시
+
     document.querySelector('.loading').addEventListener('transitionend', (e)=>{
-      document.body.removeChild(e.currentTarget);
+      if (e.currentTarget.parentNode === document.body) {
+				document.body.removeChild(e.currentTarget);
+			}
     })
   }); //이미지까지 로딩이 다 되면 실행
-  
-  
-  
 
-  setCanvasImage();
+  // setCanvasImage();
 })();

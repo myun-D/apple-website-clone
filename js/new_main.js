@@ -632,7 +632,11 @@
 
         let sequence = Math.round(calcValues(values.imageSequence, currentYOffset));
         if(objs.videoImages[sequence]){
-          objs.context.drawImage(objs.videoImages[sequence], 0, 0,objs.videoImages[sequence].width / 0.66, objs.videoImages[sequence].height / 0.66 );
+          if(currentScene == 2){
+            objs.context.drawImage(objs.videoImages[sequence], 0, 0,objs.videoImages[sequence].width / 0.66, objs.videoImages[sequence].height / 0.66 );
+          }else{
+            objs.context.drawImage(objs.videoImages[sequence], 0, 0);
+          }
         }
       }
     }

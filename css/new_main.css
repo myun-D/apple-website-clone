@@ -135,7 +135,7 @@ body.before-load{
   color: rgb(29,29,31);
 }
 .desc-message{
-  width: 50%;
+  width: 50% !important;
   font-weight: bold;  
   opacity: 0;
 }
@@ -145,12 +145,12 @@ body.before-load{
   background: rgb(29,29,31);
 }
 #scroll-section-2 .b{
-  top: 10%;
-  left: 40%;
+  top: 27%;
+  left: 33%;
 }
 #scroll-section-2 .c{
-  top: 15%;
-  left: 45%;
+  top: 29%;
+  left: 52%;
 }
 .mid-message{
   max-width: 1000px;
@@ -307,11 +307,11 @@ body.before-load{
     width: 20%;
   }
   #scroll-section-2 .b{
-    top: 20%;
-    left: 53%;
+    top: 27%;
+    left: 40.5%;
   }
   #scroll-section-2 .c{
-    left: 55%;
+    left: 51%;
   }
   .mid-message{
     padding: 0;
